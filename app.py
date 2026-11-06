@@ -19,7 +19,7 @@ CATEGORIES = [
 ]
 CONDITIONS = ["Baik", "Rusak", "Dalam Perbaikan"]
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="public/static", static_url_path="/static")
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-change-this-before-deployment")
 
 
