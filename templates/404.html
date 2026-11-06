@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}Barang tidak ditemukan{% endblock %}
+{% block content %}<section class="not-found"><p class="eyebrow">HALAMAN TIDAK TERSEDIA</p><h1>Barang tidak ditemukan.</h1><p>Data mungkin sudah dihapus atau alamat tidak sesuai.</p><a class="button button-primary" href="{{ url_for('index') }}">Kembali ke inventaris</a></section>{% endblock %}

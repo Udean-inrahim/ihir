@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f0e6">
+  <title>{% block title %}Inventaris Lab{% endblock %} | Inventaris Lab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navigasi utama">
+      <a class="brand" href="{{ url_for('index') }}" aria-label="Inventaris Lab, dashboard">
+        <span class="brand-mark" aria-hidden="true">IL</span>
+        <span><strong>Inventaris</strong><small>Laboratorium komputer</small></span>
+      </a>
+      <p class="nav-caption">RUANG KERJA</p>
+      <nav class="main-nav">
+        <a class="nav-link {% if request.endpoint == 'index' %}is-active{% endif %}" href="{{ url_for('index') }}"><span class="nav-symbol" aria-hidden="true">▦</span>Ringkasan & barang</a>
+        <a class="nav-link {% if request.endpoint in ['create_item', 'edit_item'] %}is-active{% endif %}" href="{{ url_for('create_item') }}"><span class="nav-symbol" aria-hidden="true">＋</span>Tambah barang</a>
+      </nav>
+      <div class="sidebar-note"><span class="note-rule"></span><p>Catatan aset yang rapi<br>membantu lab siap dipakai.</p><small>BUKU INVENTARIS DIGITAL</small></div>
+      <div class="sidebar-footer"><span class="online-mark"></span>Database lokal aktif</div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><div><span class="breadcrumb">LAB KOMPUTER <span>/</span> {% block crumb %}DASHBOARD{% endblock %}</span></div><span class="date-label">PENGELOLAAN ASET</span></header>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}<div class="flash-stack" aria-live="polite">{% for category, message in messages %}<div class="flash flash-{{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+      <footer class="page-footer"><span>Inventaris laboratorium komputer</span><span>Data tersimpan di perangkat ini</span></footer>
+    </main>
+  </div>
+</body>
+</html>

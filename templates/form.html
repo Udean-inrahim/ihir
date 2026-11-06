@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block crumb %}<a href="{{ url_for('index') }}">INVENTARIS</a> / {{ page_title|upper }}{% endblock %}
+{% block content %}
+<section class="form-page">
+  <a class="back-link" href="{{ url_for('index') }}">← Kembali ke daftar</a>
+  <div class="form-heading"><p class="eyebrow">FORMULIR INVENTARIS</p><h1>{{ page_title }}<em>.</em></h1><p>Isi informasi perangkat agar catatan aset tetap akurat.</p></div>
+  <form class="item-form" method="post" novalidate>
+    {% if errors %}<div class="error-summary" role="alert" tabindex="-1" aria-labelledby="error-title" data-error-summary><h2 id="error-title">Periksa kembali isian</h2><p>Beberapa informasi perlu diperbaiki sebelum disimpan.</p><ul>{% for field, message in errors.items() %}<li><a href="#{{ field }}">{{ message }}</a></li>{% endfor %}</ul></div>{% endif %}
+    <div class="form-section-title"><span>01</span><div><h2>Identitas barang</h2><p>Kode unik dan nama yang mudah dikenali.</p></div></div>
+    <div class="form-grid">
+      <div class="field {% if errors.kode_barang %}has-error{% endif %}"><label for="kode_barang">Kode barang <b>*</b></label><input id="kode_barang" name="kode_barang" value="{{ item.get('kode_barang', '') }}" placeholder="Contoh: INV-PC-001" required maxlength="60">{% if errors.kode_barang %}<small class="field-error">{{ errors.kode_barang }}</small>{% endif %}</div>
+      <div class="field {% if errors.nama_barang %}has-error{% endif %}"><label for="nama_barang">Nama barang <b>*</b></label><input id="nama_barang" name="nama_barang" value="{{ item.get('nama_barang', '') }}" placeholder="Contoh: Komputer PC" required maxlength="120">{% if errors.nama_barang %}<small class="field-error">{{ errors.nama_barang }}</small>{% endif %}</div>
+      <div class="field {% if errors.kategori %}has-error{% endif %}"><label for="kategori">Kategori <b>*</b></label><select id="kategori" name="kategori" required><option value="">Pilih kategori</option>{% for value in categories %}<option value="{{ value }}" {% if item.get('kategori') == value %}selected{% endif %}>{{ value }}</option>{% endfor %}</select>{% if errors.kategori %}<small class="field-error">{{ errors.kategori }}</small>{% endif %}</div>
+      <div class="field {% if errors.jumlah %}has-error{% endif %}"><label for="jumlah">Jumlah unit <b>*</b></label><input id="jumlah" name="jumlah" type="number" min="1" step="1" value="{{ item.get('jumlah', '') }}" placeholder="Misal: 10" required>{% if errors.jumlah %}<small class="field-error">{{ errors.jumlah }}</small>{% endif %}</div>
+    </div>
+    <div class="form-section-title second-form-section"><span>02</span><div><h2>Kondisi & lokasi</h2><p>Catat keadaan dan tempat penyimpanan barang.</p></div></div>
+    <div class="form-grid">
+      <div class="field {% if errors.kondisi %}has-error{% endif %}"><label for="kondisi">Kondisi <b>*</b></label><select id="kondisi" name="kondisi" required><option value="">Pilih kondisi</option>{% for value in conditions %}<option value="{{ value }}" {% if item.get('kondisi') == value %}selected{% endif %}>{{ value }}</option>{% endfor %}</select>{% if errors.kondisi %}<small class="field-error">{{ errors.kondisi }}</small>{% endif %}</div>
+      <div class="field {% if errors.lokasi %}has-error{% endif %}"><label for="lokasi">Lokasi <b>*</b></label><input id="lokasi" name="lokasi" value="{{ item.get('lokasi', '') }}" placeholder="Contoh: Lab Komputer 1" required maxlength="120">{% if errors.lokasi %}<small class="field-error">{{ errors.lokasi }}</small>{% endif %}</div>
+      <div class="field"><label for="tanggal_masuk">Tanggal masuk <span>Opsional</span></label><input id="tanggal_masuk" name="tanggal_masuk" type="date" value="{{ item.get('tanggal_masuk', '') }}">{% if errors.tanggal_masuk %}<small class="field-error">{{ errors.tanggal_masuk }}</small>{% endif %}</div>
+      <div class="field"><label for="keterangan">Keterangan <span>Opsional</span></label><textarea id="keterangan" name="keterangan" rows="3" placeholder="Catatan tambahan tentang barang">{{ item.get('keterangan', '') }}</textarea></div>
+    </div>
+    <div class="form-actions"><span><b>*</b> Wajib diisi</span><div><a class="button button-light" href="{{ url_for('index') }}">Batal</a><button class="button button-primary" type="submit">Simpan barang</button></div></div>
+  </form>
+</section>
+{% endblock %}
