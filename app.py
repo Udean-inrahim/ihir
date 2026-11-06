@@ -1,6 +1,8 @@
 from datetime import date
+import os
 from pathlib import Path
 import sqlite3
+import re
 
 from flask import Flask, abort, flash, g, redirect, render_template, request, url_for
 
@@ -18,18 +20,47 @@ CATEGORIES = [
 CONDITIONS = ["Baik", "Rusak", "Dalam Perbaikan"]
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "dev-change-this-before-deployment"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-change-this-before-deployment")
+
+
+def connect_db():
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        DATABASE.parent.mkdir(parents=True, exist_ok=True)
+        connection = sqlite3.connect(DATABASE)
+        connection.row_factory = sqlite3.Row
+        return connection
+
+    import psycopg
+    from psycopg.rows import dict_row
+
+    class PostgresConnection:
+        def __init__(self, connection):
+            self.connection = connection
+
+        def execute(self, query, params=()):
+            query = re.sub(r"\s+COLLATE NOCASE", "", query, flags=re.IGNORECASE)
+            return self.connection.execute(query.replace("?", "%s"), params)
+
+        def commit(self):
+            self.connection.commit()
+
+        def close(self):
+            self.connection.close()
+
+    return PostgresConnection(psycopg.connect(database_url, row_factory=dict_row))
 
 
 def get_db():
     if "db" not in g:
-        DATABASE.parent.mkdir(parents=True, exist_ok=True)
-        g.db = sqlite3.connect(DATABASE)
-        g.db.row_factory = sqlite3.Row
+        g.db = connect_db()
+        database_url = os.environ.get("DATABASE_URL")
+        id_column = "SERIAL PRIMARY KEY" if database_url else "INTEGER PRIMARY KEY AUTOINCREMENT"
+        code_column = "TEXT NOT NULL UNIQUE" if database_url else "TEXT NOT NULL COLLATE NOCASE UNIQUE"
         g.db.execute(
-            """CREATE TABLE IF NOT EXISTS barang (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                kode_barang TEXT NOT NULL COLLATE NOCASE UNIQUE,
+            f"""CREATE TABLE IF NOT EXISTS barang (
+                id {id_column},
+                kode_barang {code_column},
                 nama_barang TEXT NOT NULL,
                 kategori TEXT NOT NULL,
                 jumlah INTEGER NOT NULL CHECK (jumlah > 0),
@@ -41,6 +72,8 @@ def get_db():
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )"""
         )
+        if database_url:
+            g.db.execute("CREATE UNIQUE INDEX IF NOT EXISTS barang_kode_lower ON barang (LOWER(kode_barang))")
         g.db.commit()
     return g.db
 
@@ -97,7 +130,7 @@ def validate_form(item_id=None):
         except ValueError:
             errors["tanggal_masuk"] = "Gunakan tanggal yang valid."
     duplicate = get_db().execute(
-        "SELECT id FROM barang WHERE kode_barang = ? COLLATE NOCASE AND id != ?",
+        "SELECT id FROM barang WHERE LOWER(kode_barang) = LOWER(?) AND id != ?",
         (values["kode_barang"], item_id or 0),
     ).fetchone()
     if duplicate:
